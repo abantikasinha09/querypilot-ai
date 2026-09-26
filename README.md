@@ -1,42 +1,24 @@
-🤖 QueryPilot AI — Natural Language to SQL Analytics Assistant
-```
+ 🤖 QueryPilot AI — Natural Language to SQL Analytics Assistant
 
-```
-QueryPilot AI is an AI-powered Text-to-SQL application that allows users to
-interact with a relational database using natural language. Instead of manually
-writing SQL queries, users can ask questions such as “Which country has the most
-customers?” The system uses an LLM-powered agent to understand the question,
-inspect the database schema, generate SQL, execute it, and return an
-understandable answer along with the generated SQL and query results.
-```
+QueryPilot AI is an AI-powered Text-to-SQL application that allows users to interact with a relational database using natural language. Instead of manually writing SQL queries, users can ask questions such as “Which country has the most customers?” The system uses an LLM-powered agent to understand the question, inspect the database schema, generate SQL, execute it, and return an understandable answer along with the generated SQL and query results.
 
-# `FEATURES` 
+## Features
 
-- `Natural Language Database Queries` 
+- Natural Language Database Queries
+- AI-Powered SQL Generation using a Groq-hosted LLM through LangChain
+- Generated SQL Visibility
+- Interactive Query Results in a structured table
+- Automatic Visualization: suitable results are converted into bar charts
+- Read-Only SQL Validation before separate result-viewer execution
+- Destructive operations blocked at the app validation layer: INSERT, UPDATE, DELETE, DROP, ALTER, etc.
+- Database Explorer for tables and columns
+- Query History for the current application session
+- Technical Details showing model, framework, database, and SQL validation
+- Interactive Streamlit Interface
 
-- `AI-Powered SQL Generation using a Groq-hosted LLM through LangChain` 
+## How It Works
 
-- `Generated SQL Visibility` 
-
-- `Interactive Query Results in a structured table` 
-
-- `Automatic Visualization: suitable results are converted into bar charts` 
-
-- `Read-Only SQL Validation before separate result-viewer execution` 
-
-- `Destructive operations blocked at the app validation layer: INSERT, UPDATE, DELETE, DROP, ALTER, etc.` 
-
-- `Database Explorer for tables and columns` 
-
-- `Query History for the current application session` 
-
-- `Technical Details showing model, framework, database, and SQL validation` 
-
-- `Interactive Streamlit Interface` 
-
-```
-HOW IT WORKS
-------------
+```text
 User Question
       ↓
 QueryPilot AI / LangChain Agent
@@ -53,9 +35,9 @@ SQLite Chinook Database
 Results + Natural Language Answer + SQL + Chart
 ```
 
-```
-ARCHITECTURE
-------------
+## Architecture
+
+```text
 User
   ↓
 Streamlit Interface
@@ -71,171 +53,110 @@ Query Results
 Answer + Generated SQL + Visualization
 ```
 
-```
-TECH STACK
-----------
-• Python
-```
+## Tech Stack
 
-```
-• LangChain
-```
+- Python
+- LangChain
+- LangGraph
+- Groq
+- GPT-OSS 120B
+- SQLAlchemy
+- SQLite
+- Streamlit
+- Pandas
+- Rich
+- uv
 
-- `LangGraph` 
+## Database
 
-- `Groq` 
-
-- `GPT-OSS 120B` 
-
-- `SQLAlchemy` 
-
-- `SQLite` 
-
-- `Streamlit` 
-
-- `Pandas` 
-
-- `Rich` 
-
-- `uv` 
-
-# `DATABASE` 
-
-```
 QueryPilot AI uses the Chinook SQLite sample digital music store database.
-```
 
-```
-Main tables:
-```
+### Main Tables
 
-- `Customer` 
+- Customer
+- Invoice
+- InvoiceLine
+- Track
+- Album
+- Artist
+- Genre
+- MediaType
+- Playlist
+- Employee
 
-- `Invoice` 
+## Example Questions
 
-- `InvoiceLine` 
+- How many customers are from Canada?
+- Which country has the most customers?
+- Who are the top 5 best-selling artists?
+- Which employee generated the most revenue?
+- What are the most popular music genres?
+- Which customers have spent the most money?
 
-- `Track` 
+## SQL Safety
 
-- `Album` 
+The application includes application-level validation for SQL used by the separate result viewer.
 
-- `Artist` 
+Only queries beginning with `SELECT` or `WITH` are accepted.
 
-- `Genre` 
-
-- `MediaType` 
-
-- `Playlist` 
-
-- `Employee` 
-
-# `EXAMPLE QUESTIONS` 
-
-- `How many customers are from Canada?` 
-
-- `Which country has the most customers?` 
-
-- `Who are the top 5 best-selling artists?` 
-
-- `Which employee generated the most revenue?` 
-
-- `What are the most popular music genres?` 
-
-- `Which customers have spent the most money?` 
-
-# `SQL SAFETY` 
-
-```
-The application includes application-level validation for SQL used by the
-separate result viewer.
-```
-
-```
-Only queries beginning with SELECT or WITH are accepted.
-```
-
-```
 The following destructive operations are rejected:
-```
 
-- `INSERT` 
+- `INSERT`
+- `UPDATE`
+- `DELETE`
+- `DROP`
+- `ALTER`
+- `CREATE`
+- `TRUNCATE`
 
-- `UPDATE` 
+### Important
 
-- `DELETE` 
+This validation is an application-level safeguard and should not be treated as a complete database security boundary for the agent’s own tool execution. In a production deployment, the database should use a dedicated read-only connection and appropriate database permissions.
 
-- `DROP` 
+## Getting Started
 
-- `ALTER` 
+### Clone the Repository
 
-- `CREATE` 
-
-- `TRUNCATE` 
-
-# `Important:` 
-
-```
-This validation is an application-level safeguard and should not be treated as a
-complete database security boundary for the agent’s own tool execution. In a
-production deployment, the database should use a dedicated read-only connection
-and appropriate database permissions.
-```
-
-# `GETTING STARTED` 
-
-```
-Clone the repository:
-```
-
-```
+```bash
 git clone https://github.com/abantikasinha09/querypilot-ai.git
 cd querypilot-ai
 ```
 
-```
-Install dependencies using uv:
-```
+### Install Dependencies
 
-```
+Install dependencies using uv:
+
+```bash
 uv sync
 ```
 
-```
-ENVIRONMENT VARIABLES
-```
+## Environment Variables
 
-```
----------------------
-Create a .env file:
+Create a `.env` file:
+
+```env
 GROQ_API_KEY=your_groq_api_key
 LANGCHAIN_TRACING_V2=false
 LANGCHAIN_PROJECT=querypilot-ai
 ```
 
-```
-Never commit .env or expose your API key.
-```
+Never commit `.env` or expose your API key.
 
-```
-RUN FROM CLI
-```
+## Run from CLI
 
-```
+```bash
 uv run python agent.py "How many customers are from Canada?"
 ```
 
-```
-RUN THE STREAMLIT APPLICATION
-```
+## Run the Streamlit Application
 
-```
------------------------------
+```bash
 uv run streamlit run app.py
 ```
 
-# `PROJECT STRUCTURE` 
+## Project Structure
 
-```
+```text
 querypilot-ai/
 │
 ├── app.py
@@ -249,90 +170,50 @@ querypilot-ai/
 └── tutorial.ipynb
 ```
 
-```
-chinook.db and .env are excluded from Git using .gitignore.
-```
+`chinook.db` and `.env` are excluded from Git using `.gitignore`.
 
-```
-QUERY PROCESSING FLOW
-```
+## Query Processing Flow
 
-`1. User enters a natural-language question.` 
-
-`2. QueryPilot AI receives the question.` 
-
-`3. The agent inspects available database tables.` 
-
-```
+1. User enters a natural-language question.
+2. QueryPilot AI receives the question.
+3. The agent inspects available database tables.
 4. The agent inspects the relevant table schemas.
-```
+5. The Groq LLM generates the SQL query.
+6. The SQL query is executed against the database.
+7. Query results are returned.
+8. A natural-language answer is generated.
+9. Streamlit displays the answer, SQL, results, and visualization.
 
-`5. The Groq LLM generates the SQL query.` 
+## Project Goals
 
-`6. The SQL query is executed against the database.` 
+- Convert natural language into SQL
+- Allow non-SQL users to explore relational databases
+- Demonstrate agent-based database interaction
+- Make generated SQL visible and understandable
+- Present database results in an accessible format
+- Explore safe handling of read-only analytical queries
 
-`7. Query results are returned.` 
+## Future Improvements
 
-`8. A natural-language answer is generated.` 
+- Database-level read-only permissions
+- Improved SQL validation and query analysis
+- Support for multiple databases
+- CSV export
+- Advanced visualizations
+- Persistent query history
+- Authentication
+- Query caching
+- Automated SQL evaluation
+- Cloud deployment
+- Query performance monitoring
 
-`9. Streamlit displays the answer, SQL, results, and visualization.` 
+## Author
 
-# `PROJECT GOALS` 
+**Abantika Sinha**
 
-- `Convert natural language into SQL` 
+GitHub: https://github.com/abantikasinha09
 
-- `Allow non-SQL users to explore relational databases` 
+Project Repository: https://github.com/abantikasinha09/querypilot-ai
 
-- `Demonstrate agent-based database interaction` 
-
-- `Make generated SQL visible and understandable` 
-
-- `Present database results in an accessible format` 
-
-- `Explore safe handling of read-only analytical queries` 
-
-# `FUTURE IMPROVEMENTS` 
-
-- `Database-level read-only permissions` 
-
-- `Improved SQL validation and query analysis` 
-
-- `Support for multiple databases` 
-
-- `CSV export` 
-
-- `Advanced visualizations` 
-
-- `Persistent query history` 
-
-- `Authentication` 
-
-- `Query caching` 
-
-- `Automated SQL evaluation` 
-
-- `Cloud deployment` 
-
-- `Query performance monitoring` 
-
-# `AUTHOR` 
-
-```
-------
-Abantika Sinha
-```
-
-```
-GitHub:
-```
-
-```
-https://github.com/abantikasinha09
-```
-
-```
-Project Repository:
-https://github.com/abantikasinha09/querypilot-ai
-```
 
 
