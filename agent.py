@@ -10,14 +10,22 @@ from langchain_groq import ChatGroq
 from rich.console import Console
 from rich.panel import Panel
 
+from download_database import download_database
 
-# Load environment variables
+
+# ---------------------------------------------------------
+# Environment setup
+# ---------------------------------------------------------
+
 load_dotenv()
 
 console = Console()
 
 
-# System prompt for the SQL agent
+# ---------------------------------------------------------
+# System prompt
+# ---------------------------------------------------------
+
 SYSTEM_PROMPT = """
 You are an agent designed to interact with a SQL database.
 
@@ -35,13 +43,12 @@ Only ask for the relevant columns given the question.
 
 You MUST double check your query before executing it.
 
-If you get an error while executing a query, rewrite the query and try again.
+If you get an error while executing the query, rewrite the query and try again.
 
 DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the
 database.
 
-To start you should ALWAYS look at the tables in the database to see what you
-can query.
+To start you should ALWAYS look at the tables in the database to see what you can query.
 
 Do NOT skip this step.
 
@@ -49,37 +56,37 @@ Then you should query the schema of the most relevant tables.
 """
 
 
-def create_sql_agent():
-    """Create and return a text-to-SQL agent."""
+# ---------------------------------------------------------
+# Create SQL Agent
+# ---------------------------------------------------------
 
-    # Path to the Chinook database
+def create_sql_agent():
+
+    # Make sure the database exists before creating the agent
+    download_database()
+
     db_path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         "chinook.db"
     )
 
-    # Connect to SQLite database
     db = SQLDatabase.from_uri(
         f"sqlite:///{db_path}",
         sample_rows_in_table_info=3
     )
 
-    # Initialize Groq LLM
     model = ChatGroq(
         model="openai/gpt-oss-120b",
         temperature=0
     )
 
-    # Create SQL toolkit
     toolkit = SQLDatabaseToolkit(
         db=db,
         llm=model
     )
 
-    # Get database tools
     tools = toolkit.get_tools()
 
-    # Create the agent
     agent = create_agent(
         model,
         tools,
@@ -92,8 +99,11 @@ def create_sql_agent():
     return agent
 
 
+# ---------------------------------------------------------
+# Main application
+# ---------------------------------------------------------
+
 def main():
-    """Main entry point for the SQL Agent CLI."""
 
     parser = argparse.ArgumentParser(
         description="Text-to-SQL Agent powered by LangChain and Groq",
@@ -114,7 +124,10 @@ Examples:
 
     args = parser.parse_args()
 
-    # Display the question
+    # -----------------------------------------------------
+    # Display question
+    # -----------------------------------------------------
+
     console.print(
         Panel(
             f"[bold cyan]Question:[/bold cyan] {args.question}",
@@ -124,15 +137,22 @@ Examples:
 
     console.print()
 
-    # Create the agent
+    # -----------------------------------------------------
+    # Create agent
+    # -----------------------------------------------------
+
     console.print("[dim]Creating SQL Agent...[/dim]")
+
     agent = create_sql_agent()
 
-    # Process the question
     console.print("[dim]Processing query...[/dim]\n")
 
+    # -----------------------------------------------------
+    # Execute question
+    # -----------------------------------------------------
+
     try:
-        # Run the agent
+
         result = agent.invoke(
             {
                 "messages": [
@@ -144,20 +164,18 @@ Examples:
             }
         )
 
-        # ---------------------------------------------------------
-        # Find and display generated SQL + query result
-        # ---------------------------------------------------------
-
-        sql_found = False
-        result_found = False
+        # -------------------------------------------------
+        # Display generated SQL
+        # -------------------------------------------------
 
         console.print(
             "[bold yellow]Generated SQL:[/bold yellow]"
         )
 
-        for i, message in enumerate(result["messages"]):
+        sql_found = False
 
-            # Find SQL tool call
+        for message in result["messages"]:
+
             if hasattr(message, "tool_calls") and message.tool_calls:
 
                 for tool_call in message.tool_calls:
@@ -175,44 +193,17 @@ Examples:
                             )
                         )
 
-                        # Look for the tool result immediately after
-                        if i + 1 < len(result["messages"]):
-
-                            next_message = result["messages"][i + 1]
-
-                            if getattr(next_message, "type", "") == "tool":
-
-                                result_found = True
-
-                                query_result = next_message.content
-
-                                console.print()
-                                console.print(
-                                    "[bold magenta]Query Result:[/bold magenta]"
-                                )
-
-                                console.print(
-                                    Panel(
-                                        str(query_result),
-                                        border_style="magenta"
-                                    )
-                                )
-
         if not sql_found:
+
             console.print(
                 "[dim]No SQL query was directly exposed by the agent.[/dim]"
             )
 
-        if not result_found:
-            console.print(
-                "[dim]Query result was not directly exposed.[/dim]"
-            )
-
         console.print()
 
-        # ---------------------------------------------------------
-        # Get final answer
-        # ---------------------------------------------------------
+        # -------------------------------------------------
+        # Display final answer
+        # -------------------------------------------------
 
         final_message = result["messages"][-1]
 
@@ -222,16 +213,16 @@ Examples:
             else str(final_message)
         )
 
-        # ---------------------------------------------------------
-        # Display final answer
-        # ---------------------------------------------------------
-
         console.print(
             Panel(
                 f"[bold green]Answer:[/bold green]\n\n{answer}",
                 border_style="green"
             )
         )
+
+    # -----------------------------------------------------
+    # Error handling
+    # -----------------------------------------------------
 
     except Exception as e:
 
@@ -244,6 +235,10 @@ Examples:
 
         sys.exit(1)
 
+
+# ---------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------
 
 if __name__ == "__main__":
     main()

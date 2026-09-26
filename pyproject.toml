@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-py-modules = ["agent", "app"]
+py-modules = ["agent", "app", "download_database"]
 
 [project.urls]
 Repository = "https://github.com/abantikasinha09/querypilot-ai.git"

@@ -6,6 +6,7 @@ import streamlit as st
 from sqlalchemy import create_engine, inspect, text
 
 from agent import create_sql_agent
+from download_database import download_database
 
 
 # ============================================================
@@ -181,8 +182,9 @@ def load_agent():
 
 @st.cache_resource
 def load_database():
-    if not os.path.exists(DB_PATH):
-        return None
+
+    # Automatically download the database if it is missing
+    download_database()
 
     engine = create_engine(
         f"sqlite:///{DB_PATH}"
@@ -281,18 +283,18 @@ with st.sidebar:
 
     st.subheader("🔎 Database Explorer")
 
-    engine = load_database()
+    try:
+        engine = load_database()
 
-    if engine is not None:
+        inspector = inspect(engine)
 
-        try:
-            inspector = inspect(engine)
+        tables = inspector.get_table_names()
 
-            tables = inspector.get_table_names()
+        st.write(
+            f"**{len(tables)} tables available**"
+        )
 
-            st.write(
-                f"**{len(tables)} tables available**"
-            )
+        if tables:
 
             selected_table = st.selectbox(
                 "Select a table",
@@ -315,16 +317,10 @@ with st.sidebar:
                 for column in column_names:
                     st.write(f"• `{column}`")
 
-        except Exception as e:
-
-            st.warning(
-                f"Unable to inspect database: {e}"
-            )
-
-    else:
+    except Exception as e:
 
         st.error(
-            "chinook.db was not found."
+            f"Unable to inspect database: {e}"
         )
 
 
@@ -352,6 +348,7 @@ st.markdown(
 col1, col2, col3 = st.columns(3)
 
 with col1:
+
     st.markdown(
         """
         <div class="feature-card">
@@ -363,6 +360,7 @@ with col1:
     )
 
 with col2:
+
     st.markdown(
         """
         <div class="feature-card">
@@ -374,6 +372,7 @@ with col2:
     )
 
 with col3:
+
     st.markdown(
         """
         <div class="feature-card">
@@ -410,7 +409,6 @@ example_questions = [
     "How many customers are from Canada?",
     "Which employee generated the most revenue?",
 ]
-
 
 example_columns = st.columns(4)
 
@@ -605,38 +603,37 @@ if run_query:
 
         if generated_sql and sql_is_safe:
 
-            engine = load_database()
+            try:
 
-            if engine is not None:
+                engine = load_database()
 
-                try:
+                with engine.connect() as connection:
 
-                    with engine.connect() as connection:
+                    query_results = pd.read_sql(
+                        text(generated_sql),
+                        connection
+                    )
 
-                        query_results = pd.read_sql(
-                            text(generated_sql),
-                            connection
-                        )
 
-                    # ----------------------------------------
-                    # QUERY RESULTS
-                    # ----------------------------------------
+                # ----------------------------------------
+                # QUERY RESULTS
+                # ----------------------------------------
 
-                    st.subheader("📊 Query Results")
+                st.subheader("📊 Query Results")
 
-                    if query_results.empty:
+                if query_results.empty:
 
-                        st.info(
-                            "The query returned no results."
-                        )
+                    st.info(
+                        "The query returned no results."
+                    )
 
-                    else:
+                else:
 
-                        st.dataframe(
-                            query_results,
-                            width="stretch",
-                            hide_index=True
-                        )
+                    st.dataframe(
+                        query_results,
+                        width="stretch",
+                        hide_index=True
+                    )
 
 
                     # ========================================
@@ -694,12 +691,12 @@ if run_query:
                                 width="stretch"
                             )
 
-                except Exception as e:
+            except Exception as e:
 
-                    st.error(
-                        f"Unable to execute the generated "
-                        f"SQL query: {e}"
-                    )
+                st.error(
+                    f"Unable to execute the generated "
+                    f"SQL query: {e}"
+                )
 
 
         # ====================================================
