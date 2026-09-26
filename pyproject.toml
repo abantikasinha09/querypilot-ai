@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "An AI-powered Text-to-SQL agent using LangChain and Groq"
 readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
     "langchain>=1.3.11",
     "langchain-community>=0.3.0",
@@ -14,6 +15,9 @@ dependencies = [
     "langchain-groq>=1.1.3",
     "streamlit>=1.64.0",
 ]
+
+[tool.setuptools]
+py-modules = ["agent", "app"]
 
 [project.urls]
 Repository = "https://github.com/abantikasinha09/querypilot-ai.git"
