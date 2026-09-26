@@ -1,5 +1,5 @@
 [project]
-name = "text2sql-agent"
+name = "querypilot-ai"
 version = "0.1.0"
 description = "An AI-powered Text-to-SQL agent using LangChain and Groq"
 readme = "README.md"
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/kevinbfrank/text-to-sql-agent"
+Repository = "https://github.com/abantikasinha09/querypilot-ai.git"
 
 [build-system]
 requires = ["setuptools>=61.0"]
