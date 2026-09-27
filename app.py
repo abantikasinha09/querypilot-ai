@@ -335,7 +335,7 @@ st.markdown(
 
 st.markdown(
     '<div class="subtitle">'
-    'Ask your database questions in plain English.'
+    'Ask your database questions in English.'
     '</div>',
     unsafe_allow_html=True
 )
